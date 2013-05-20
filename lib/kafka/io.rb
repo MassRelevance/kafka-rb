@@ -31,7 +31,7 @@ module Kafka
         self.socket = TCPSocket.new(self.host, self.port)
       end
     rescue
-      self.disconnect(opts[:timeout])
+      self.disconnect(opts)
       raise
     end
 
@@ -47,17 +47,17 @@ module Kafka
         self.socket.read(length) || raise(SocketError, "no data")
       end
     rescue
-      self.disconnect(opts[:timeout])
+      self.disconnect(opts)
       raise
     end
 
     def write(data, opts={})
       Timeout::timeout(opts[:timeout]) do
-        self.reconnect(opts[:timeout]) unless self.socket
+        self.reconnect(opts) unless self.socket
         self.socket.write(data)
       end
     rescue
-      self.disconnect(opts[:timeout])
+      self.disconnect(opts)
       raise
     end
 
