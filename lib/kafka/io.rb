@@ -26,31 +26,39 @@ module Kafka
       self.socket = TCPSocket.new(host, port)
     end
 
-    def reconnect
-      self.socket = TCPSocket.new(self.host, self.port)
+    def reconnect(opts={})
+      Timeout::timeout(opts[:timeout]) do
+        self.socket = TCPSocket.new(self.host, self.port)
+      end
     rescue
-      self.disconnect
+      self.disconnect(opts[:timeout])
       raise
     end
 
-    def disconnect
-      self.socket.close rescue nil
-      self.socket = nil
+    def disconnect(opts={})
+      Timeout::timeout(opts[:timeout]) do
+        self.socket.close rescue nil
+        self.socket = nil
+      end
     end
 
-    def read(length)
-      self.socket.read(length) || raise(SocketError, "no data")
+    def read(length, opts={})
+      Timeout::timeout(opts[:timeout]) do
+        self.socket.read(length) || raise(SocketError, "no data")
+      end
     rescue
-      self.disconnect
-      raise SocketError, "cannot read: #{$!.message}"
+      self.disconnect(opts[:timeout])
+      raise
     end
 
-    def write(data)
-      self.reconnect unless self.socket
-      self.socket.write(data)
+    def write(data, opts={})
+      Timeout::timeout(opts[:timeout]) do
+        self.reconnect(opts[:timeout]) unless self.socket
+        self.socket.write(data)
+      end
     rescue
-      self.disconnect
-      raise SocketError, "cannot write: #{$!.message}"
+      self.disconnect(opts[:timeout])
+      raise
     end
 
   end

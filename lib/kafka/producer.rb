@@ -28,8 +28,8 @@ module Kafka
       self.connect(self.host, self.port)
     end
 
-    def push(messages)
-      self.write(Encoder.produce(self.topic, self.partition, messages, compression))
+    def push(messages, opts={})
+      self.write(Encoder.produce(self.topic, self.partition, messages, compression), opts)
     end
 
     def batch(&block)
